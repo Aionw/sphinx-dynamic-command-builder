@@ -3,14 +3,14 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "sphinx-dynamic-command"
+name = "sphinx-dynamic-command-builder"
 version = "0.1.0"
 description = "Interactive command builders for Sphinx documentation"
 readme = "README.md"
 license = "MIT"
 requires-python = ">=3.9"
 authors = [
-  { name = "sphinx-dynamic-command contributors" },
+  { name = "sphinx-dynamic-command-builder contributors" },
 ]
 keywords = ["sphinx", "documentation", "directive", "command", "interactive"]
 classifiers = [
@@ -44,19 +44,20 @@ test = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/your-org/sphinx-dynamic-command"
-Issues = "https://github.com/your-org/sphinx-dynamic-command/issues"
+Homepage = "https://github.com/Aionw/sphinx-dynamic-command-builder"
+Repository = "https://github.com/Aionw/sphinx-dynamic-command-builder"
+Issues = "https://github.com/Aionw/sphinx-dynamic-command-builder/issues"
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/sphinx_dynamic_command"]
+packages = ["src/sphinx_dynamic_command_builder"]
 
 [tool.hatch.build.targets.sdist]
 include = [
   "/src",
   "/docs",
+  "/examples",
   "/tests",
   "/README.md",
   "/LICENSE",
   "/pyproject.toml",
 ]
-

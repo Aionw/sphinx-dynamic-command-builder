@@ -1,7 +1,16 @@
-# sphinx-dynamic-command
+# sphinx-dynamic-command-builder
+
+```{toctree}
+:maxdepth: 2
+
+configuration
+```
 
 ```{dynamic-command}
 base: python -m sglang.launch_server --model-path [model_path]
+format:
+  line_break: options
+  indent: "  "
 options:
   - label: Integration path
     key: path
@@ -38,4 +47,3 @@ options:
         value: "8"
         args: --tp-size 8
 ```
-

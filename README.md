@@ -1,20 +1,24 @@
-# sphinx-dynamic-command
+# sphinx-dynamic-command-builder
+
+[![PyPI](https://img.shields.io/pypi/v/sphinx-dynamic-command-builder.svg)](https://pypi.org/project/sphinx-dynamic-command-builder/)
 
 Interactive command builders for Sphinx documentation.
 
-`sphinx-dynamic-command` adds a `dynamic-command` directive that renders a small selector UI from YAML and updates a generated command in the browser. It is useful for docs that need to show command-line examples assembled from several independent choices.
+`sphinx-dynamic-command-builder` adds a `dynamic-command` directive that renders a small selector UI from YAML and updates a generated command in the browser. It is useful for docs that need to show command-line examples assembled from several independent choices.
+
+Demo: [GitHub Pages](https://aionw.github.io/sphinx-dynamic-command-builder/)
 
 ## Install
 
 ```bash
-pip install sphinx-dynamic-command
+pip install sphinx-dynamic-command-builder
 ```
 
 Then enable the extension in `conf.py`:
 
 ```python
 extensions = [
-    "sphinx_dynamic_command",
+    "sphinx_dynamic_command_builder",
 ]
 ```
 
@@ -23,6 +27,9 @@ extensions = [
 ````md
 ```{dynamic-command}
 base: python -m sglang.launch_server --model-path [model_path]
+format:
+  line_break: options
+  indent: "  "
 options:
   - label: Topology
     key: nodes
@@ -41,8 +48,12 @@ Each option group is rendered as one selector row. Selecting a choice updates th
 
 ## YAML schema
 
+See [Configuration](docs/configuration.md) for the full field reference and formatting rules.
+
 - `base`: base command string.
 - `command_label`: optional output label. Defaults to `Generated command`.
+- `format.line_break`: optional command wrapping mode. Use `options` to put each `--option` group on its own shell-continuation line, or `none` to render a single line. Defaults to `options`.
+- `format.indent`: optional indentation for continuation lines. Defaults to two spaces.
 - `options`: list of option groups.
 - `options[].label`: visible group label.
 - `options[].key`: stable group key.

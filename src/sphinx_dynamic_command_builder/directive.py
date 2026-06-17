@@ -77,6 +77,25 @@ def _option_group(group: dict[str, Any]) -> str:
 """
 
 
+def _format_attrs(config: dict[str, Any]) -> dict[str, str]:
+    format_config = config.get("format", {})
+    if format_config is None:
+        format_config = {}
+    if not isinstance(format_config, dict):
+        raise ValueError("format must be a YAML mapping")
+
+    line_break = _as_str(format_config.get("line_break", "options"), "format.line_break")
+    if line_break not in {"options", "none"}:
+        raise ValueError("format.line_break must be one of: options, none")
+
+    indent = _as_str(format_config.get("indent", "  "), "format.indent")
+
+    return {
+        "data-sdc-line-break": line_break,
+        "data-sdc-indent": indent,
+    }
+
+
 class DynamicCommandDirective(Directive):
     """Render a selector-driven command generator from YAML content."""
 
@@ -99,6 +118,11 @@ class DynamicCommandDirective(Directive):
             command_label = _as_str(
                 config.get("command_label", "Generated command"), "command_label"
             )
+            format_attrs = _format_attrs(config)
+            rendered_format_attrs = " ".join(
+                f'{escape(name)}="{escape(value, quote=True)}"'
+                for name, value in format_attrs.items()
+            )
             rendered_groups = "\n".join(_option_group(group) for group in groups)
         except Exception as exc:
             error = self.state_machine.reporter.error(
@@ -115,10 +139,9 @@ class DynamicCommandDirective(Directive):
     </div>
     <div class="sdc-command">
       <div class="sdc-command-label">{escape(command_label)}</div>
-      <pre><code class="language-bash" data-sdc-output data-sdc-base="{escape(base, quote=True)}"></code></pre>
+      <pre><code class="language-bash" data-sdc-output data-sdc-base="{escape(base, quote=True)}" {rendered_format_attrs}></code></pre>
     </div>
   </div>
 </div>
 """
         return [nodes.raw("", html, format="html")]
-
