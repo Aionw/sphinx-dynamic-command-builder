@@ -1,57 +1,62 @@
 sphinx-dynamic-command-builder example
-==============================
+======================================
 
 This page is built by Sphinx and renders the command builder through the
 ``sphinx_dynamic_command_builder`` extension.
 
 .. dynamic-command::
 
-   base: python -m sglang.launch_server --model-path [model_path]
-   command_label: Generated command
+   base: rg dynamic-command .
+   command_label: Search command
    format:
      line_break: options
      indent: "  "
    options:
-     - label: Integration path
-       key: path
-       default: hicache
+     - label: Match mode
+       key: match_mode
+       default: smart
        choices:
-         - label: HiCache L3
-           value: hicache
-           env: MOONCAKE_MASTER=127.0.0.1:50051
-           args: --enable-hierarchical-cache --hicache-storage-backend mooncake
-         - label: PD disaggregation
-           value: pd
-           args: --disaggregation-mode prefill
-     - label: Topology
-       key: nodes
-       default: single
+         - label: Smart case
+           value: smart
+           args: --smart-case
+         - label: Case sensitive
+           value: sensitive
+         - label: Ignore case
+           value: ignore
+           args: --ignore-case
+     - label: Context
+       key: context
+       default: none
        choices:
-         - label: Single node
-           value: single
-           args: --host 0.0.0.0 --port 30000
-         - label: Multi node
-           value: multi
-           args: --host 0.0.0.0 --port 30000 --disaggregation-ib-device mlx5_1
-     - label: Parallelism
-       key: tp
-       default: "4"
+         - label: None
+           value: none
+         - label: 2 lines
+           value: two
+           args: --context 2
+         - label: 5 lines
+           value: five
+           args: --context 5
+     - label: Files
+       key: files
+       default: normal
        choices:
-         - label: TP 1
-           value: "1"
-           args: --tp-size 1
-         - label: TP 4
-           value: "4"
-           args: --tp-size 4
-         - label: TP 8
-           value: "8"
-           args: --tp-size 8
-     - label: Runtime
-       key: runtime
-       default: python
+         - label: Respect ignore files
+           value: normal
+         - label: Include hidden
+           value: hidden
+           args: --hidden
+         - label: Include ignored
+           value: ignored
+           args: --hidden --no-ignore
+     - label: Type filter
+       key: type
+       default: all
        choices:
-         - label: Python module
+         - label: All files
+           value: all
+         - label: Python
            value: python
-         - label: uv run
-           value: uv
-           base: uv run python -m sglang.launch_server --model-path [model_path]
+           args: --type py
+         - label: Markdown
+           value: markdown
+           args: --type md
