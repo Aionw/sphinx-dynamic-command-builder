@@ -44,6 +44,10 @@ options:
 ```
 ````
 
+Rendered result:
+
+![Rendered dynamic command builder](docs/_static/usage.png)
+
 Each option group is rendered as one selector row. Selecting a choice updates the generated command.
 
 ## YAML schema
