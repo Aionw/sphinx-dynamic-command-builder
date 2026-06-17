@@ -2,10 +2,7 @@
 
 Interactive command builders for Sphinx documentation.
 
-`sphinx-dynamic-command` adds a `dynamic-command` directive that renders a
-small selector UI from YAML and updates a generated command in the browser.
-It is useful for docs that need to show command-line examples assembled from
-several independent choices.
+`sphinx-dynamic-command` adds a `dynamic-command` directive that renders a small selector UI from YAML and updates a generated command in the browser. It is useful for docs that need to show command-line examples assembled from several independent choices.
 
 ## Install
 
@@ -40,8 +37,7 @@ options:
 ```
 ````
 
-Each option group is rendered as one selector row. Selecting a choice updates
-the generated command.
+Each option group is rendered as one selector row. Selecting a choice updates the generated command.
 
 ## YAML schema
 
@@ -66,4 +62,3 @@ uv pip install -e ".[test,docs]"
 pytest
 sphinx-build -M html docs docs/_build
 ```
-
