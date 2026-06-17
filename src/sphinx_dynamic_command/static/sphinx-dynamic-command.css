@@ -1,0 +1,105 @@
+.sdc-card {
+  background: var(--pst-color-background, #fff);
+  border: 1px solid var(--pst-color-border, #d8dee4);
+  border-radius: 8px;
+  box-shadow: 0 1px 2px rgb(0 0 0 / 6%);
+  margin: 1.5rem 0;
+  overflow: hidden;
+}
+
+.sdc-controls {
+  background: color-mix(in srgb, var(--pst-color-surface, #f6f8fa) 96%, var(--pst-color-primary, #0969da) 4%);
+  border-bottom: 1px solid var(--pst-color-border, #d8dee4);
+  display: grid;
+  gap: 0;
+  padding: 0.35rem 1rem;
+}
+
+.sdc-group {
+  align-items: center;
+  border-bottom: 1px solid var(--pst-color-border, #d8dee4);
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: minmax(120px, 180px) 1fr;
+  padding: 0.65rem 0;
+}
+
+.sdc-group:last-child {
+  border-bottom: 0;
+}
+
+.sdc-label,
+.sdc-command-label {
+  color: var(--pst-color-text-muted, #57606a);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0;
+  line-height: 1.2;
+}
+
+.sdc-buttons {
+  background: var(--pst-color-background, #fff);
+  border: 1px solid var(--pst-color-border, #d8dee4);
+  border-radius: 7px;
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+  max-width: 100%;
+  padding: 0.25rem;
+  width: max-content;
+}
+
+.sdc-button {
+  background: transparent;
+  border: 0;
+  border-radius: 5px;
+  color: var(--pst-color-text-base, #24292f);
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.9rem;
+  line-height: 1.2;
+  padding: 0.42rem 0.68rem;
+  transition: background-color 120ms ease, color 120ms ease, box-shadow 120ms ease;
+}
+
+.sdc-button.is-selected {
+  background: var(--pst-color-primary, #0969da);
+  box-shadow: 0 1px 2px rgb(0 0 0 / 12%);
+  color: var(--pst-color-on-primary, #fff);
+}
+
+.sdc-command {
+  background: var(--pst-color-background, #fff);
+  padding: 1rem;
+}
+
+.sdc-command-label {
+  margin-bottom: 0.5rem;
+}
+
+.sdc-command pre {
+  border: 1px solid var(--pst-color-border, #d8dee4);
+  border-radius: 7px;
+  margin: 0;
+  overflow-x: auto;
+  white-space: pre;
+}
+
+.sdc-command code {
+  font-size: 0.86rem;
+  line-height: 1.45;
+  white-space: pre;
+}
+
+@media (max-width: 640px) {
+  .sdc-group {
+    align-items: start;
+    gap: 0.45rem;
+    grid-template-columns: 1fr;
+  }
+
+  .sdc-buttons {
+    width: 100%;
+  }
+}
+
