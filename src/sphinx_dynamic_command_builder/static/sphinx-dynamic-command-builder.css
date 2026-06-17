@@ -32,7 +32,7 @@
 .sdc-command-label {
   color: var(--pst-color-text-muted, #57606a);
   font-size: 0.75rem;
-  font-weight: 600;
+  font-weight: 700;
   letter-spacing: 0;
   line-height: 1.2;
 }
@@ -59,7 +59,19 @@
   font-size: 0.9rem;
   line-height: 1.2;
   padding: 0.42rem 0.68rem;
+  position: relative;
   transition: background-color 120ms ease, color 120ms ease, box-shadow 120ms ease;
+}
+
+.sdc-button + .sdc-button::before {
+  background: var(--pst-color-border, #d8dee4);
+  content: "";
+  height: 1rem;
+  left: -0.125rem;
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 1px;
 }
 
 .sdc-button.is-selected {
@@ -102,4 +114,3 @@
     width: 100%;
   }
 }
-
