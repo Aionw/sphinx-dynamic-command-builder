@@ -46,4 +46,19 @@ options:
       - label: TP 8
         value: "8"
         args: --tp-size 8
+  - label: Runtime features
+    key: features
+    multiple: true
+    default:
+      - cuda-graphs
+    choices:
+      - label: CUDA graphs
+        value: cuda-graphs
+        args: --enable-cuda-graph
+      - label: Metrics
+        value: metrics
+        args: --show-time-cost
+      - label: Torch compile
+        value: compile
+        args: --enable-torch-compile
 ```

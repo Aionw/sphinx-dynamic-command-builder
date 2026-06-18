@@ -16,7 +16,36 @@ def _as_str(value: Any, field: str) -> str:
     return value
 
 
-def _choice_button(group_key: str, group_default: str, choice: dict[str, Any]) -> str:
+def _as_bool(value: Any, field: str) -> bool:
+    if value is None:
+        return False
+    if not isinstance(value, bool):
+        raise ValueError(f"{field} must be a boolean")
+    return value
+
+
+def _default_values(group: dict[str, Any], key: str, multiple: bool) -> set[str]:
+    default = group.get("default")
+    choices = group["choices"]
+
+    if multiple:
+        if default is None:
+            return set()
+        if isinstance(default, str):
+            return {default} if default else set()
+        if isinstance(default, list) and all(isinstance(value, str) for value in default):
+            return set(default)
+        raise ValueError(f"options.{key}.default must be a string or list of strings")
+
+    default_value = _as_str(default, f"options.{key}.default")
+    if not default_value:
+        default_value = _as_str(choices[0].get("value"), "choice.value")
+    return {default_value}
+
+
+def _choice_button(
+    group_key: str, group_defaults: set[str], choice: dict[str, Any], multiple: bool
+) -> str:
     label = _as_str(choice.get("label"), "choice.label")
     value = _as_str(choice.get("value"), "choice.value")
     if not label:
@@ -30,6 +59,8 @@ def _choice_button(group_key: str, group_default: str, choice: dict[str, Any]) -
         "data-sdc-option": group_key,
         "data-sdc-value": value,
     }
+    if multiple:
+        attrs["data-sdc-multiple"] = "true"
 
     command_base = _as_str(choice.get("base"), "choice.base")
     env = _as_str(choice.get("env"), "choice.env")
@@ -40,7 +71,7 @@ def _choice_button(group_key: str, group_default: str, choice: dict[str, Any]) -
         attrs["data-sdc-env"] = env
     if args:
         attrs["data-sdc-args"] = args
-    if value == group_default:
+    if value in group_defaults:
         attrs["data-sdc-default"] = "true"
 
     rendered_attrs = " ".join(
@@ -53,7 +84,6 @@ def _choice_button(group_key: str, group_default: str, choice: dict[str, Any]) -
 def _option_group(group: dict[str, Any]) -> str:
     label = _as_str(group.get("label"), "options.label")
     key = _as_str(group.get("key"), "options.key")
-    default = _as_str(group.get("default"), "options.default")
     choices = group.get("choices")
 
     if not label:
@@ -63,12 +93,21 @@ def _option_group(group: dict[str, Any]) -> str:
     if not isinstance(choices, list) or not choices:
         raise ValueError(f"options.{key}.choices must be a non-empty list")
 
-    if not default:
-        default = _as_str(choices[0].get("value"), "choice.value")
+    multiple = _as_bool(group.get("multiple"), f"options.{key}.multiple")
+    defaults = _default_values(group, key, multiple)
+    group_attrs = {"class": "sdc-group"}
+    if multiple:
+        group_attrs["data-sdc-multiple"] = "true"
 
-    buttons = "\n".join(_choice_button(key, default, choice) for choice in choices)
+    rendered_group_attrs = " ".join(
+        f'{escape(name)}="{escape(attr_value, quote=True)}"'
+        for name, attr_value in group_attrs.items()
+    )
+    buttons = "\n".join(
+        _choice_button(key, defaults, choice, multiple) for choice in choices
+    )
     return f"""
-    <div class="sdc-group">
+    <div {rendered_group_attrs}>
       <div class="sdc-label">{escape(label)}</div>
       <div class="sdc-buttons">
         {buttons}

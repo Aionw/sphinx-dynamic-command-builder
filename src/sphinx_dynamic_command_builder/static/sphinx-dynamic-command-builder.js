@@ -116,20 +116,61 @@
     return false;
   }
 
+  function getOptionKey(option) {
+    return option.getAttribute("data-sdc-option");
+  }
+
+  function getOptionValue(option) {
+    return option.getAttribute("data-sdc-value");
+  }
+
+  function getOptions(panel, key) {
+    return Array.from(panel.querySelectorAll("[data-sdc-option]")).filter(
+      (option) => getOptionKey(option) === key
+    );
+  }
+
+  function isMultipleOption(option) {
+    return option.getAttribute("data-sdc-multiple") === "true";
+  }
+
+  function isMultipleGroup(options) {
+    return options.some(isMultipleOption);
+  }
+
+  function selectedValues(value) {
+    return Array.isArray(value) ? value : [value];
+  }
+
+  function selectedOptions(panel, key, value) {
+    const values = selectedValues(value);
+    return getOptions(panel, key).filter((option) =>
+      values.includes(getOptionValue(option))
+    );
+  }
+
   function readState(panel) {
     const keys = Array.from(
       new Set(
         Array.from(panel.querySelectorAll("[data-sdc-option]")).map((option) =>
-          option.getAttribute("data-sdc-option")
+          getOptionKey(option)
         )
       )
     );
 
     return keys.reduce((state, key) => {
-      const selected = panel.querySelector(
-        `[data-sdc-option="${key}"][data-sdc-default="true"]`
+      const options = getOptions(panel, key);
+      const defaults = options.filter(
+        (option) => option.getAttribute("data-sdc-default") === "true"
       );
-      const first = panel.querySelector(`[data-sdc-option="${key}"]`);
+
+      if (isMultipleGroup(options)) {
+        state[key] = defaults.map(getOptionValue);
+        return state;
+      }
+
+      const selected = defaults[0];
+      const first = options[0];
       state[key] = (selected || first)?.getAttribute("data-sdc-value") || "";
       return state;
     }, {});
@@ -137,9 +178,9 @@
 
   function updatePanel(panel, state) {
     panel.querySelectorAll("[data-sdc-option]").forEach((option) => {
-      const key = option.getAttribute("data-sdc-option");
-      const value = option.getAttribute("data-sdc-value");
-      const isSelected = state[key] === value;
+      const key = getOptionKey(option);
+      const value = getOptionValue(option);
+      const isSelected = selectedValues(state[key]).includes(value);
 
       option.classList.toggle("is-selected", isSelected);
       option.setAttribute("aria-pressed", isSelected ? "true" : "false");
@@ -151,27 +192,21 @@
       let command = output.getAttribute("data-sdc-base") || "";
 
       Object.entries(state).forEach(([key, value]) => {
-        const selected = Array.from(
-          panel.querySelectorAll(`[data-sdc-option="${key}"]`)
-        ).find((option) => option.getAttribute("data-sdc-value") === value);
+        selectedOptions(panel, key, value).forEach((selected) => {
+          const nextBase = selected.getAttribute("data-sdc-base");
+          const nextEnv = selected.getAttribute("data-sdc-env");
+          const nextArgs = selected.getAttribute("data-sdc-args");
 
-        if (!selected) {
-          return;
-        }
-
-        const nextBase = selected.getAttribute("data-sdc-base");
-        const nextEnv = selected.getAttribute("data-sdc-env");
-        const nextArgs = selected.getAttribute("data-sdc-args");
-
-        if (nextBase) {
-          command = nextBase;
-        }
-        if (nextEnv) {
-          env.push(nextEnv);
-        }
-        if (nextArgs) {
-          args.push(nextArgs);
-        }
+          if (nextBase) {
+            command = nextBase;
+          }
+          if (nextEnv) {
+            env.push(nextEnv);
+          }
+          if (nextArgs) {
+            args.push(nextArgs);
+          }
+        });
       });
 
       const commandText = formatCommand(env, command, args, {
@@ -190,8 +225,17 @@
 
     panel.querySelectorAll("[data-sdc-option]").forEach((option) => {
       option.addEventListener("click", () => {
-        state[option.getAttribute("data-sdc-option")] =
-          option.getAttribute("data-sdc-value");
+        const key = getOptionKey(option);
+        const value = getOptionValue(option);
+
+        if (isMultipleOption(option)) {
+          const values = Array.isArray(state[key]) ? state[key] : [];
+          state[key] = values.includes(value)
+            ? values.filter((selectedValue) => selectedValue !== value)
+            : [...values, value];
+        } else {
+          state[key] = value;
+        }
         updatePanel(panel, state);
       });
     });

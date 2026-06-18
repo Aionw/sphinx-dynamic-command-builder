@@ -69,7 +69,8 @@ Each item in `options` defines one selector group:
 
 - `options[].label`: required string. Visible group label.
 - `options[].key`: required string. Stable key used to track the selected choice.
-- `options[].default`: optional string. Default choice value. Defaults to the first choice.
+- `options[].multiple`: optional boolean. Use `true` when the group should allow more than one selected choice. Defaults to `false`.
+- `options[].default`: optional string, or list of strings when `multiple: true`. Single-select groups default to the first choice. Multi-select groups default to no selected choices.
 - `options[].choices`: required non-empty list. Available choices for the group.
 
 Each item in `choices` defines one selectable command fragment:
@@ -80,13 +81,40 @@ Each item in `choices` defines one selectable command fragment:
 - `choices[].args`: optional string. Appended after the command when selected.
 - `choices[].base`: optional string. Replaces the top-level `base` command when selected.
 
+Multi-select groups toggle each choice independently:
+
+```yaml
+options:
+  - label: Features
+    key: features
+    multiple: true
+    default:
+      - cuda-graphs
+      - metrics
+    choices:
+      - label: CUDA graphs
+        value: cuda-graphs
+        args: --enable-cuda-graph
+      - label: Metrics
+        value: metrics
+        args: --show-time-cost
+      - label: Torch compile
+        value: compile
+        args: --enable-torch-compile
+```
+
+Omit `default` in a multi-select group when no choices should be selected
+initially. Use a string when only one default choice is needed, or a list of
+strings when several choices should start selected.
+
 ## Command Assembly
 
 The generated command is assembled in this order:
 
 1. Selected `env` fragments.
 2. The active command, either top-level `base` or the selected choice `base`.
-3. Selected `args` fragments in option group order.
+3. Selected `args` fragments in option group order. Multi-select groups append
+   selected choices in the order they appear in YAML.
 
 With `format.line_break: options`, tokens beginning with `--` start a new
 continuation line. Values following an option stay on the same line as that

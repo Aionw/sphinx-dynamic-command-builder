@@ -145,6 +145,35 @@ options:
 """.strip(),
             "choice.value is required",
         ),
+        (
+            """
+base: run
+options:
+  - label: Mode
+    key: mode
+    multiple: "true"
+    choices:
+      - label: Fast
+        value: fast
+""".strip(),
+            "options.mode.multiple must be a boolean",
+        ),
+        (
+            """
+base: run
+options:
+  - label: Mode
+    key: mode
+    multiple: true
+    default:
+      - fast
+      - 2
+    choices:
+      - label: Fast
+        value: fast
+""".strip(),
+            "options.mode.default must be a string or list of strings",
+        ),
     ],
 )
 def test_directive_reports_configuration_errors(content, message):
@@ -186,10 +215,50 @@ def test_option_group_defaults_to_first_choice():
     assert 'data-sdc-value="slow" data-sdc-default="true"' not in html
 
 
+def test_option_group_supports_multiple_choice_defaults():
+    html = _option_group(
+        {
+            "label": "Features",
+            "key": "features",
+            "multiple": True,
+            "default": ["cuda", "graphs"],
+            "choices": [
+                {"label": "CUDA", "value": "cuda", "args": "--cuda"},
+                {"label": "FlashInfer", "value": "flashinfer", "args": "--flashinfer"},
+                {"label": "CUDA graphs", "value": "graphs", "args": "--cuda-graphs"},
+            ],
+        }
+    )
+
+    assert '<div class="sdc-group" data-sdc-multiple="true">' in html
+    assert html.count('data-sdc-multiple="true"') == 4
+    assert html.count('data-sdc-default="true"') == 2
+    assert 'data-sdc-value="cuda" data-sdc-multiple="true"' in html
+    assert 'data-sdc-value="graphs" data-sdc-multiple="true"' in html
+    assert 'data-sdc-value="flashinfer" data-sdc-multiple="true"' in html
+
+
+def test_multiple_option_group_defaults_to_no_choice():
+    html = _option_group(
+        {
+            "label": "Features",
+            "key": "features",
+            "multiple": True,
+            "choices": [
+                {"label": "CUDA", "value": "cuda"},
+                {"label": "FlashInfer", "value": "flashinfer"},
+            ],
+        }
+    )
+
+    assert 'data-sdc-multiple="true"' in html
+    assert 'data-sdc-default="true"' not in html
+
+
 def test_choice_button_escapes_attribute_and_label_values():
     html = _choice_button(
         "mode",
-        "fast",
+        {"fast"},
         {
             "label": "Fast <safe>",
             "value": "fast",
@@ -197,6 +266,7 @@ def test_choice_button_escapes_attribute_and_label_values():
             "args": '--name "x<y>"',
             "base": "run <tool>",
         },
+        False,
     )
 
     assert "Fast &lt;safe&gt;" in html

@@ -49,6 +49,8 @@ Rendered result:
 ![Rendered dynamic command builder](docs/_static/usage.png)
 
 Each option group is rendered as one selector row. Selecting a choice updates the generated command.
+Set `multiple: true` on a group when choices should toggle independently
+instead of behaving as a single-select control.
 
 ## YAML schema
 
@@ -61,7 +63,8 @@ See [Configuration](docs/configuration.md) for the full field reference and form
 - `options`: list of option groups.
 - `options[].label`: visible group label.
 - `options[].key`: stable group key.
-- `options[].default`: optional default choice value. Defaults to the first choice.
+- `options[].multiple`: optional boolean. Use `true` for multi-select groups. Defaults to `false`.
+- `options[].default`: optional default choice value. Single-select groups use a string and default to the first choice. Multi-select groups use a string or list of strings and default to no selected choices.
 - `options[].choices`: list of choices.
 - `choices[].label`: visible choice label.
 - `choices[].value`: stable choice value.

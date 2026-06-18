@@ -60,3 +60,18 @@ This page is built by Sphinx and renders the command builder through the
          - label: Markdown
            value: markdown
            args: --type md
+     - label: Extras
+       key: extras
+       multiple: true
+       default:
+         - heading
+       choices:
+         - label: Line numbers
+           value: line_numbers
+           args: --line-number
+         - label: Headings
+           value: heading
+           args: --heading
+         - label: JSON
+           value: json
+           args: --json
