@@ -6,11 +6,16 @@ This page is built by Sphinx and renders the command builder through the
 
 .. dynamic-command::
 
-   base: rg dynamic-command .
+   base: rg {query} .
    command_label: Search command
    format:
      line_break: options
      indent: "  "
+   inputs:
+     - label: Search text
+       key: query
+       default: dynamic-command
+       placeholder: pattern or phrase
    options:
      - label: Match mode
        key: match_mode

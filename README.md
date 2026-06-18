@@ -26,10 +26,14 @@ extensions = [
 
 ````md
 ```{dynamic-command}
-base: python -m sglang.launch_server --model-path [model_path]
+base: python -m sglang.launch_server --model-path {model_path}
 format:
   line_break: options
   indent: "  "
+inputs:
+  - label: Model path
+    key: model_path
+    default: meta-llama/Llama-3.1-8B-Instruct
 options:
   - label: Topology
     key: nodes
@@ -51,6 +55,8 @@ Rendered result:
 Each option group is rendered as one selector row. Selecting a choice updates the generated command.
 Set `multiple: true` on a group when choices should toggle independently
 instead of behaving as a single-select control.
+Text inputs are rendered from `inputs` and can be inserted into command fragments
+with `{key}` placeholders.
 
 ## YAML schema
 
@@ -60,6 +66,11 @@ See [Configuration](docs/configuration.md) for the full field reference and form
 - `command_label`: optional output label. Defaults to `Generated command`.
 - `format.line_break`: optional command wrapping mode. Use `options` to put each `--option` group on its own shell-continuation line, or `none` to render a single line. Defaults to `options`.
 - `format.indent`: optional indentation for continuation lines. Defaults to two spaces.
+- `inputs`: optional list of text input rows.
+- `inputs[].label`: visible input label.
+- `inputs[].key`: placeholder key used as `{key}` in command fragments.
+- `inputs[].default`: optional initial input value.
+- `inputs[].placeholder`: optional placeholder text.
 - `options`: list of option groups.
 - `options[].label`: visible group label.
 - `options[].key`: stable group key.

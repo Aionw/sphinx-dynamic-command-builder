@@ -65,6 +65,25 @@
       .join("\n");
   }
 
+  function shellQuote(value) {
+    if (value === "") {
+      return '""';
+    }
+    if (/^[A-Za-z0-9_@%+=:,./-]+$/.test(value)) {
+      return value;
+    }
+    return `'${value.replace(/'/g, "'\"'\"'")}'`;
+  }
+
+  function replaceInputPlaceholders(text, state) {
+    return text.replace(/\{([A-Za-z0-9_-]+)\}/g, (placeholder, key) => {
+      if (!Object.prototype.hasOwnProperty.call(state.inputs, key)) {
+        return placeholder;
+      }
+      return shellQuote(state.inputs[key]);
+    });
+  }
+
   function escapeHtml(value) {
     return value.replace(/[&<>"']/g, (character) => {
       const entities = {
@@ -158,6 +177,14 @@
       )
     );
 
+    const inputState = Array.from(panel.querySelectorAll("[data-sdc-input]")).reduce(
+      (state, input) => {
+        state[input.getAttribute("data-sdc-input")] = input.value;
+        return state;
+      },
+      {}
+    );
+
     return keys.reduce((state, key) => {
       const options = getOptions(panel, key);
       const defaults = options.filter(
@@ -173,7 +200,7 @@
       const first = options[0];
       state[key] = (selected || first)?.getAttribute("data-sdc-value") || "";
       return state;
-    }, {});
+    }, { inputs: inputState });
   }
 
   function updatePanel(panel, state) {
@@ -189,22 +216,28 @@
     panel.querySelectorAll("[data-sdc-output]").forEach((output) => {
       const env = [];
       const args = [];
-      let command = output.getAttribute("data-sdc-base") || "";
+      let command = replaceInputPlaceholders(
+        output.getAttribute("data-sdc-base") || "",
+        state
+      );
 
       Object.entries(state).forEach(([key, value]) => {
+        if (key === "inputs") {
+          return;
+        }
         selectedOptions(panel, key, value).forEach((selected) => {
           const nextBase = selected.getAttribute("data-sdc-base");
           const nextEnv = selected.getAttribute("data-sdc-env");
           const nextArgs = selected.getAttribute("data-sdc-args");
 
           if (nextBase) {
-            command = nextBase;
+            command = replaceInputPlaceholders(nextBase, state);
           }
           if (nextEnv) {
-            env.push(nextEnv);
+            env.push(replaceInputPlaceholders(nextEnv, state));
           }
           if (nextArgs) {
-            args.push(nextArgs);
+            args.push(replaceInputPlaceholders(nextArgs, state));
           }
         });
       });
@@ -222,6 +255,13 @@
 
   function setupPanel(panel) {
     const state = readState(panel);
+
+    panel.querySelectorAll("[data-sdc-input]").forEach((input) => {
+      input.addEventListener("input", () => {
+        state.inputs[input.getAttribute("data-sdc-input")] = input.value;
+        updatePanel(panel, state);
+      });
+    });
 
     panel.querySelectorAll("[data-sdc-option]").forEach((option) => {
       option.addEventListener("click", () => {
