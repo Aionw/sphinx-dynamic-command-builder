@@ -48,18 +48,72 @@
 
     const commandParts = splitCommandParts(command);
     const lines = [
-      [...env, commandParts.prefix].filter(Boolean).join(" "),
-      ...commandParts.options,
-      ...args.flatMap((arg) => groupOptionTokens(tokenizeCommand(arg))),
-    ].filter(Boolean);
+      ...env.map((line) => ({ text: line, indent: false })),
+      { text: commandParts.prefix, indent: false },
+      ...commandParts.options.map((line) => ({ text: line, indent: true })),
+      ...args
+        .flatMap((arg) => groupOptionTokens(tokenizeCommand(arg)))
+        .map((line) => ({ text: line, indent: true })),
+    ].filter((line) => line.text);
 
     return lines
       .map((line, index) => {
         const continuation = index < lines.length - 1 ? " \\" : "";
-        const indent = index === 0 ? "" : config.indent;
-        return `${indent}${line}${continuation}`;
+        const indent = line.indent ? config.indent : "";
+        return `${indent}${line.text}${continuation}`;
       })
       .join("\n");
+  }
+
+  function escapeHtml(value) {
+    return value.replace(/[&<>"']/g, (character) => {
+      const entities = {
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        '"': "&quot;",
+        "'": "&#39;",
+      };
+      return entities[character];
+    });
+  }
+
+  function highlightCommandLine(line) {
+    const tokenPattern = /(\\|--[A-Za-z0-9][A-Za-z0-9-]*|\[[^\]]+\]|\b[A-Za-z_][A-Za-z0-9_]*=[^\s\\]+)/g;
+
+    return escapeHtml(line).replace(tokenPattern, (token) => {
+      if (token === "\\") {
+        return '<span class="sdc-token-continuation">\\</span>';
+      }
+      if (token.startsWith("--")) {
+        return `<span class="sdc-token-option">${token}</span>`;
+      }
+      if (token.startsWith("[") && token.endsWith("]")) {
+        return `<span class="sdc-token-placeholder">${token}</span>`;
+      }
+      if (/^[A-Za-z_][A-Za-z0-9_]*=/.test(token)) {
+        return `<span class="sdc-token-env">${token}</span>`;
+      }
+      return token;
+    });
+  }
+
+  function highlightCommand(output) {
+    output.innerHTML = output.textContent.split("\n").map(highlightCommandLine).join("\n");
+  }
+
+  function refreshHighlighting(output) {
+    if (window.Prism?.highlightElement) {
+      window.Prism.highlightElement(output);
+      return true;
+    }
+
+    if (window.hljs?.highlightElement) {
+      window.hljs.highlightElement(output);
+      return true;
+    }
+
+    return false;
   }
 
   function readState(panel) {
@@ -120,10 +174,14 @@
         }
       });
 
-      output.textContent = formatCommand(env, command, args, {
+      const commandText = formatCommand(env, command, args, {
         indent: output.getAttribute("data-sdc-indent") || "  ",
         lineBreak: output.getAttribute("data-sdc-line-break") || "options",
       });
+      output.textContent = commandText;
+      if (!refreshHighlighting(output)) {
+        highlightCommand(output);
+      }
     });
   }
 

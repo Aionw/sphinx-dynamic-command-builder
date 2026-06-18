@@ -103,6 +103,23 @@
   white-space: pre;
 }
 
+.sdc-command code .sdc-token-env {
+  color: #1a7f37 !important;
+  font-weight: 600;
+}
+
+.sdc-command code .sdc-token-option {
+  color: #0969da !important;
+}
+
+.sdc-command code .sdc-token-placeholder {
+  color: #9a6700 !important;
+}
+
+.sdc-command code .sdc-token-continuation {
+  color: #57606a !important;
+}
+
 @media (max-width: 640px) {
   .sdc-group {
     align-items: start;

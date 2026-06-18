@@ -90,4 +90,5 @@ The generated command is assembled in this order:
 
 With `format.line_break: options`, tokens beginning with `--` start a new
 continuation line. Values following an option stay on the same line as that
-option.
+option. Selected `env` fragments are rendered as separate continuation lines
+before the active command.
