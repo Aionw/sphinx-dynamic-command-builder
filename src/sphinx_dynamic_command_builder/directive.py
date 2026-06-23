@@ -1,11 +1,15 @@
 from __future__ import annotations
 
 from html import escape
+import re
 from typing import Any
 
 from docutils import nodes
 from docutils.parsers.rst import Directive
 import yaml
+
+
+INPUT_KEY_PATTERN = re.compile(r"^[A-Za-z0-9_-]+$")
 
 
 def _as_str(value: Any, field: str) -> str:
@@ -116,6 +120,49 @@ def _option_group(group: dict[str, Any]) -> str:
 """
 
 
+def _input_group(input_config: dict[str, Any]) -> str:
+    label = _as_str(input_config.get("label"), "inputs.label")
+    key = _as_str(input_config.get("key"), "inputs.key")
+    default = _as_str(input_config.get("default"), f"inputs.{key}.default")
+    placeholder = _as_str(input_config.get("placeholder"), f"inputs.{key}.placeholder")
+
+    if not label:
+        raise ValueError("inputs.label is required")
+    if not key:
+        raise ValueError("inputs.key is required")
+    if not INPUT_KEY_PATTERN.match(key):
+        raise ValueError("inputs.key may only contain letters, numbers, underscores, and hyphens")
+
+    attrs = {
+        "class": "sdc-input",
+        "type": "text",
+        "data-sdc-input": key,
+        "value": default,
+    }
+    if placeholder:
+        attrs["placeholder"] = placeholder
+
+    rendered_attrs = " ".join(
+        f'{escape(name)}="{escape(attr_value, quote=True)}"'
+        for name, attr_value in attrs.items()
+    )
+    return f"""
+    <div class="sdc-group">
+      <label class="sdc-label">{escape(label)}</label>
+      <input {rendered_attrs}>
+    </div>
+"""
+
+
+def _input_groups(config: dict[str, Any]) -> str:
+    inputs = config.get("inputs", [])
+    if inputs is None:
+        inputs = []
+    if not isinstance(inputs, list):
+        raise ValueError("inputs must be a list")
+    return "\n".join(_input_group(input_config) for input_config in inputs)
+
+
 def _format_attrs(config: dict[str, Any]) -> dict[str, str]:
     format_config = config.get("format", {})
     if format_config is None:
@@ -162,6 +209,7 @@ class DynamicCommandDirective(Directive):
                 f'{escape(name)}="{escape(value, quote=True)}"'
                 for name, value in format_attrs.items()
             )
+            rendered_inputs = _input_groups(config)
             rendered_groups = "\n".join(_option_group(group) for group in groups)
         except Exception as exc:
             error = self.state_machine.reporter.error(
@@ -174,6 +222,7 @@ class DynamicCommandDirective(Directive):
 <div class="sdc-card">
   <div data-sdc>
     <div class="sdc-controls">
+      {rendered_inputs}
       {rendered_groups}
     </div>
     <div class="sdc-command">

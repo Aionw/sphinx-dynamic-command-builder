@@ -8,6 +8,7 @@ from sphinx_dynamic_command_builder.directive import (
     DynamicCommandDirective,
     _choice_button,
     _format_attrs,
+    _input_group,
     _option_group,
 )
 
@@ -55,6 +56,11 @@ command_label: Run <now> & "fast"
 format:
   line_break: none
   indent: "    "
+inputs:
+  - label: Query
+    key: query
+    default: dynamic command
+    placeholder: Search text
 options:
   - label: Mode <select>
     key: mode
@@ -74,6 +80,9 @@ options:
     assert 'data-sdc-base="python -m tool --model &quot;a b&quot;"' in html
     assert 'data-sdc-line-break="none"' in html
     assert 'data-sdc-indent="    "' in html
+    assert 'data-sdc-input="query"' in html
+    assert 'value="dynamic command"' in html
+    assert 'placeholder="Search text"' in html
     assert "Run &lt;now&gt; &amp; &quot;fast&quot;" in html
     assert "Mode &lt;select&gt;" in html
     assert 'data-sdc-option="mode"' in html
@@ -112,6 +121,78 @@ options:
         value: fast
 """.strip(),
             "options.key is required",
+        ),
+        (
+            """
+base: run
+inputs: bad
+options:
+  - label: Mode
+    key: mode
+    choices:
+      - label: Fast
+        value: fast
+""".strip(),
+            "inputs must be a list",
+        ),
+        (
+            """
+base: run
+inputs:
+  - key: query
+options:
+  - label: Mode
+    key: mode
+    choices:
+      - label: Fast
+        value: fast
+""".strip(),
+            "inputs.label is required",
+        ),
+        (
+            """
+base: run
+inputs:
+  - label: Query
+options:
+  - label: Mode
+    key: mode
+    choices:
+      - label: Fast
+        value: fast
+""".strip(),
+            "inputs.key is required",
+        ),
+        (
+            """
+base: run
+inputs:
+  - label: Query
+    key: query text
+options:
+  - label: Mode
+    key: mode
+    choices:
+      - label: Fast
+        value: fast
+""".strip(),
+            "inputs.key may only contain letters, numbers, underscores, and hyphens",
+        ),
+        (
+            """
+base: run
+inputs:
+  - label: Query
+    key: query
+    default: 2
+options:
+  - label: Mode
+    key: mode
+    choices:
+      - label: Fast
+        value: fast
+""".strip(),
+            "inputs.query.default must be a string",
         ),
         (
             """
@@ -197,6 +278,22 @@ def test_format_attrs_accepts_explicit_options():
 def test_format_attrs_rejects_invalid_format_config(config, message):
     with pytest.raises(ValueError, match=message):
         _format_attrs(config)
+
+
+def test_input_group_renders_text_input():
+    html = _input_group(
+        {
+            "label": "Query <text>",
+            "key": "query",
+            "default": 'hello "world"',
+            "placeholder": "Search terms",
+        }
+    )
+
+    assert '<label class="sdc-label">Query &lt;text&gt;</label>' in html
+    assert 'data-sdc-input="query"' in html
+    assert 'value="hello &quot;world&quot;"' in html
+    assert 'placeholder="Search terms"' in html
 
 
 def test_option_group_defaults_to_first_choice():
@@ -313,8 +410,8 @@ def test_setup_registers_directive_assets_and_build_hook():
 def test_copy_static_assets_copies_files_for_html_build(tmp_path, monkeypatch):
     copied = []
 
-    def fake_copy_asset(src, dst):
-        copied.append((src, dst))
+    def fake_copy_asset(src, dst, **kwargs):
+        copied.append((src, dst, kwargs))
 
     class FakeBuilder:
         format = "html"
@@ -331,10 +428,12 @@ def test_copy_static_assets_copies_files_for_html_build(tmp_path, monkeypatch):
         (
             str(extension.STATIC_DIR / "sphinx-dynamic-command-builder.css"),
             str(tmp_path / "_static"),
+            {"force": True},
         ),
         (
             str(extension.STATIC_DIR / "sphinx-dynamic-command-builder.js"),
             str(tmp_path / "_static"),
+            {"force": True},
         ),
     ]
 

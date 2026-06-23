@@ -7,10 +7,15 @@ configuration
 ```
 
 ```{dynamic-command}
-base: python -m sglang.launch_server --model-path [model_path]
+base: python -m sglang.launch_server --model-path {model_path}
 format:
   line_break: options
   indent: "  "
+inputs:
+  - label: Model path
+    key: model_path
+    default: meta-llama/Llama-3.1-8B-Instruct
+    placeholder: Hugging Face repo or local path
 options:
   - label: Integration path
     key: path

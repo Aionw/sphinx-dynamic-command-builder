@@ -80,6 +80,31 @@
   color: var(--pst-color-on-primary, #fff);
 }
 
+.sdc-input {
+  background: var(--pst-color-background, #fff);
+  border: 1px solid var(--pst-color-border, #d8dee4);
+  border-radius: 7px;
+  color: var(--pst-color-text-base, #24292f);
+  font: inherit;
+  font-size: 0.9rem;
+  line-height: 1.2;
+  max-width: 28rem;
+  min-width: 14rem;
+  padding: 0.5rem 0.68rem;
+  transition: border-color 120ms ease, box-shadow 120ms ease;
+  width: 100%;
+}
+
+.sdc-input:focus {
+  border-color: var(--pst-color-primary, #0969da);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--pst-color-primary, #0969da) 18%, transparent);
+  outline: 0;
+}
+
+.sdc-input::placeholder {
+  color: var(--pst-color-text-muted, #57606a);
+}
+
 .sdc-command {
   background: var(--pst-color-background, #fff);
   padding: 1rem;
@@ -129,5 +154,10 @@
 
   .sdc-buttons {
     width: 100%;
+  }
+
+  .sdc-input {
+    max-width: none;
+    min-width: 0;
   }
 }

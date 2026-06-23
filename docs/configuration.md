@@ -1,14 +1,18 @@
 # Configuration
 
 The `dynamic-command` directive reads a YAML mapping. The YAML describes the
-base command, the generated command format, and the option groups rendered as
-selectors.
+base command, user inputs, the generated command format, and the option groups
+rendered as selectors.
 
 ## Minimal Example
 
 ````md
 ```{dynamic-command}
-base: python -m sglang.launch_server --model-path [model_path]
+base: python -m sglang.launch_server --model-path {model_path}
+inputs:
+  - label: Model path
+    key: model_path
+    default: meta-llama/Llama-3.1-8B-Instruct
 options:
   - label: Topology
     key: nodes
@@ -28,6 +32,7 @@ options:
 - `base`: required string. The default command before selected choices add or replace anything.
 - `command_label`: optional string. Label shown above the generated command. Defaults to `Generated command`.
 - `format`: optional mapping. Controls how the generated command is displayed.
+- `inputs`: optional list. Each item defines one text input row. Use `{key}` placeholders in `base`, `choices[].env`, `choices[].args`, or `choices[].base` to insert the current value.
 - `options`: required non-empty list. Each item defines one selector row.
 
 ## Format Fields
@@ -51,7 +56,7 @@ This renders:
 
 ```bash
 python -m sglang.launch_server \
-  --model-path [model_path] \
+  --model-path meta-llama/Llama-3.1-8B-Instruct \
   --host 0.0.0.0 \
   --port 30000
 ```
@@ -62,6 +67,27 @@ Use `line_break: none` when the exact single-line command matters:
 format:
   line_break: none
 ```
+
+## Input Fields
+
+Each item in `inputs` defines one text input:
+
+- `inputs[].label`: required string. Visible input label.
+- `inputs[].key`: required string. Placeholder key used as `{key}` in command fragments.
+- `inputs[].default`: optional string. Initial input value.
+- `inputs[].placeholder`: optional string. Placeholder text shown when the input is empty.
+
+Input values are shell-quoted before they are inserted into command fragments:
+
+```yaml
+base: rg {query} .
+inputs:
+  - label: Search text
+    key: query
+    default: dynamic command
+```
+
+This renders `rg 'dynamic command' .` by default.
 
 ## Option Fields
 

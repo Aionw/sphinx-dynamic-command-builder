@@ -16,8 +16,16 @@ def _copy_static_assets(app, exc):
         return
 
     static_out = Path(app.outdir) / "_static"
-    copy_asset(str(STATIC_DIR / "sphinx-dynamic-command-builder.css"), str(static_out))
-    copy_asset(str(STATIC_DIR / "sphinx-dynamic-command-builder.js"), str(static_out))
+    copy_asset(
+        str(STATIC_DIR / "sphinx-dynamic-command-builder.css"),
+        str(static_out),
+        force=True,
+    )
+    copy_asset(
+        str(STATIC_DIR / "sphinx-dynamic-command-builder.js"),
+        str(static_out),
+        force=True,
+    )
 
 
 def setup(app):
